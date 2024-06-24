@@ -1,9 +1,11 @@
 package com.linkShorterer.app.service;
 
+import com.linkShorterer.app.model.UrlMapping;
 import com.linkShorterer.app.repository.UrlRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,7 +28,13 @@ public class UrlService {
         //obtener bits menos significativos del UUID para usar como base
         long lsb = uuid.getLeastSignificantBits();
         //convertimos aesos bits a una cadena base 62
-        return toBase62(lsb);
+        String shortUrl = toBase62(lsb);
+
+        UrlMapping urlMapping = new UrlMapping();
+        urlMapping.setOriginalUrl(originalUrl);
+        urlMapping.setShorteredUrl(shortUrl);
+        urlRepository.save(urlMapping);
+        return shortUrl;
     }
 
     private String toBase62(long value){
@@ -43,7 +51,15 @@ public class UrlService {
         }
         return sb.reverse().toString();
 
+    }
 
+    public List<UrlMapping> getAllUrls(){
+        return urlRepository.findAll();
+    }
+
+    public UrlMapping getByOriginalUrl(String originalUrl){
+
+        return urlRepository.findByOriginalUrl(originalUrl).orElse(null);
     }
 
 }
